@@ -1,5 +1,10 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'maven:3.9.8-eclipse-temurin-21'
+      args '-v $HOME/.m2:/root/.m2'
+    }
+  }
 
   stages {
 
@@ -11,27 +16,17 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh '''
-          docker run --rm \
-            -v "$PWD/backend":/app \
-            -v "$HOME/.m2":/root/.m2 \
-            -w /app \
-            maven:3.9.8-eclipse-temurin-21 \
-            mvn -q -DskipTests=false clean package
-        '''
+        dir('backend') {
+          sh 'mvn -q -DskipTests=false clean package'
+        }
       }
     }
 
     stage('Unit Tests') {
       steps {
-        sh '''
-          docker run --rm \
-            -v "$PWD/backend":/app \
-            -v "$HOME/.m2":/root/.m2 \
-            -w /app \
-            maven:3.9.8-eclipse-temurin-21 \
-            mvn -q -Dtest=*Test test
-        '''
+        dir('backend') {
+          sh 'mvn -q -Dtest=*Test test'
+        }
       }
       post {
         always {
@@ -42,14 +37,9 @@ pipeline {
 
     stage('Integration Tests') {
       steps {
-        sh '''
-          docker run --rm \
-            -v "$PWD/backend":/app \
-            -v "$HOME/.m2":/root/.m2 \
-            -w /app \
-            maven:3.9.8-eclipse-temurin-21 \
-            mvn -q -DskipTests=true -DskipITs=false failsafe:integration-test failsafe:verify
-        '''
+        dir('backend') {
+          sh 'mvn -q -DskipTests=true -DskipITs=false failsafe:integration-test failsafe:verify'
+        }
       }
       post {
         always {
@@ -59,28 +49,26 @@ pipeline {
     }
 
     stage('Docker Up') {
+      agent {
+        docker {
+          image 'docker:27-cli'
+          args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+      }
       steps {
-        sh '''
-          docker run --rm \
-            -v //./pipe/docker_engine://./pipe/docker_engine \
-            -v "$PWD":/workspace \
-            -w /workspace \
-            docker:27-cli \
-            docker compose up -d --build backend frontend
-        '''
+        sh 'docker compose up -d --build backend frontend'
       }
     }
 
     stage('E2E Tests') {
+      agent {
+        docker {
+          image 'docker:27-cli'
+          args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+      }
       steps {
-        sh '''
-          docker run --rm \
-            -v //./pipe/docker_engine://./pipe/docker_engine \
-            -v "$PWD":/workspace \
-            -w /workspace \
-            docker:27-cli \
-            docker compose --profile e2e up --build --abort-on-container-exit --exit-code-from e2e
-        '''
+        sh 'docker compose --profile e2e up --build --abort-on-container-exit --exit-code-from e2e'
       }
       post {
         always {
@@ -92,15 +80,7 @@ pipeline {
 
   post {
     always {
-      sh '''
-        docker run --rm \
-          -v //./pipe/docker_engine://./pipe/docker_engine \
-          -v "$PWD":/workspace \
-          -w /workspace \
-          docker:27-cli \
-          docker compose down -v
-      '''
+      sh 'docker compose down -v || true'
     }
   }
 }
-
