@@ -11,9 +11,9 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh 'tar -C $WORKSPACE -cf - backend | docker build -t ydgfinal-backend:latest -f backend/Dockerfile -'
-        sh 'tar -C $WORKSPACE -cf - frontend | docker build -t ydgfinal-frontend:latest -f frontend/Dockerfile -'
-        sh 'tar -C $WORKSPACE -cf - e2e | docker build -t ydgfinal-e2e:latest -f e2e/Dockerfile -'
+        sh 'tar -C $WORKSPACE/backend -cf - . | docker build -t ydgfinal-backend:latest -f Dockerfile -'
+        sh 'tar -C $WORKSPACE/frontend -cf - . | docker build -t ydgfinal-frontend:latest -f Dockerfile -'
+        sh 'tar -C $WORKSPACE/e2e -cf - . | docker build -t ydgfinal-e2e:latest -f Dockerfile -'
         sh 'docker run --rm --volumes-from $(hostname) -w $WORKSPACE/backend maven:3.9.8-eclipse-temurin-21 mvn -q -DskipTests=false clean package'
         sh 'docker run --rm --volumes-from $(hostname) -w $WORKSPACE/frontend node:20-alpine sh -c "npm install && npm run build"'
       }
