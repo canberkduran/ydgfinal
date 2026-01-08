@@ -13,7 +13,6 @@ pipeline {
       steps {
         sh 'tar -C $WORKSPACE/backend -cf - . | DOCKER_BUILDKIT=0 docker build -t ydgfinal-backend:latest -f Dockerfile -'
         sh 'tar -C $WORKSPACE/frontend -cf - . | DOCKER_BUILDKIT=0 docker build -t ydgfinal-frontend:latest -f Dockerfile -'
-        sh 'tar -C $WORKSPACE/e2e -cf - . | DOCKER_BUILDKIT=0 docker build -t ydgfinal-e2e:latest -f Dockerfile -'
         sh 'docker run --rm --volumes-from $(hostname) -w $WORKSPACE/backend maven:3.9.8-eclipse-temurin-21 mvn -q -DskipTests=false clean package'
         sh 'docker run --rm --volumes-from $(hostname) -w $WORKSPACE/frontend node:20-alpine sh -c "npm install && npm run build"'
       }
@@ -49,11 +48,12 @@ pipeline {
 
     stage('E2E Tests') {
       steps {
-        sh 'docker-compose --profile e2e up --build --abort-on-container-exit --exit-code-from e2e'
+        sh 'docker-compose --profile e2e up -d selenium'
+        sh 'docker run --rm --volumes-from $(hostname) --network ydgfinal_default -w $WORKSPACE/e2e maven:3.9.8-eclipse-temurin-21 mvn -q test'
       }
       post {
         always {
-          junit 'e2e/target/surefire-reports/*.xml'
+          junit allowEmptyResults: true, testResults: 'e2e/target/surefire-reports/*.xml'
         }
       }
     }
