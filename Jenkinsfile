@@ -11,13 +11,14 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh 'docker compose run --rm maven mvn clean package -DskipTests=false'
+        sh 'docker-compose run --rm maven mvn -q -DskipTests=false clean package'
+        sh 'docker-compose run --rm node sh -c "npm install && npm run build"'
       }
     }
 
     stage('Unit Tests') {
       steps {
-        sh 'docker compose run --rm maven mvn test'
+        sh 'docker-compose run --rm maven mvn -q -Dtest=*Test test'
       }
       post {
         always {
@@ -28,7 +29,7 @@ pipeline {
 
     stage('Integration Tests') {
       steps {
-        sh 'docker compose run --rm maven mvn verify -DskipTests=true'
+        sh 'docker-compose run --rm maven mvn -q -DskipTests=true -DskipITs=false failsafe:integration-test failsafe:verify'
       }
       post {
         always {
@@ -39,13 +40,13 @@ pipeline {
 
     stage('Docker Up') {
       steps {
-        sh 'docker compose up -d --build backend frontend'
+        sh 'docker-compose up -d --build backend frontend'
       }
     }
 
     stage('E2E Tests') {
       steps {
-        sh 'docker compose --profile e2e up --build --abort-on-container-exit --exit-code-from e2e'
+        sh 'docker-compose --profile e2e up --build --abort-on-container-exit --exit-code-from e2e'
       }
       post {
         always {
@@ -57,7 +58,7 @@ pipeline {
 
   post {
     always {
-      sh 'docker compose down -v'
+      sh 'docker-compose down -v'
     }
   }
 }

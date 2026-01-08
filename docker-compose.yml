@@ -43,5 +43,28 @@ services:
     image: maven:3.9.8-eclipse-temurin-21
     volumes:
       - ./backend:/app
-      - ~/.m2:/root/.m2
+      - maven-repo:/root/.m2
     working_dir: /app
+
+  node:
+    image: node:20-alpine
+    volumes:
+      - ./frontend:/app
+      - node-modules:/app/node_modules
+    working_dir: /app
+
+  jenkins:
+    build: ./jenkins
+    profiles: ["ci"]
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  maven-repo:
+  node-modules:
+  jenkins_home:
