@@ -48,9 +48,10 @@ pipeline {
 
     stage('E2E Tests') {
       steps {
-        sh 'docker-compose down --remove-orphans || true'
-        sh 'docker-compose --profile e2e up -d --build --force-recreate backend frontend selenium'
-        sh 'docker run --rm --volumes-from $(hostname) --network ydgfinal_default -w $WORKSPACE/e2e maven:3.9.8-eclipse-temurin-21 mvn -q test'
+        sh 'export COMPOSE_PROJECT_NAME=ydgfinal; docker network create ydgfinal_default || true'
+        sh 'export COMPOSE_PROJECT_NAME=ydgfinal; docker-compose down --remove-orphans || true'
+        sh 'export COMPOSE_PROJECT_NAME=ydgfinal; docker-compose --profile e2e up -d --build --force-recreate backend frontend selenium'
+        sh 'export COMPOSE_PROJECT_NAME=ydgfinal; docker run --rm --volumes-from $(hostname) --network ydgfinal_default -w $WORKSPACE/e2e maven:3.9.8-eclipse-temurin-21 mvn -q test'
       }
       post {
         always {
