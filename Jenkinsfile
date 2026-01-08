@@ -36,7 +36,7 @@ pipeline {
 
     stage('Integration Tests') {
       steps {
-        sh 'docker run --rm --volumes-from $(hostname) -w $WORKSPACE/backend maven:3.9.8-eclipse-temurin-21 mvn -q -DskipTests=true -DskipITs=false failsafe:integration-test failsafe:verify'
+        sh 'docker run --rm --volumes-from $(hostname) -w $WORKSPACE/backend maven:3.9.8-eclipse-temurin-21 mvn -q -DskipTests=false -DskipITs=false failsafe:integration-test failsafe:verify'
       }
       post {
         always {
