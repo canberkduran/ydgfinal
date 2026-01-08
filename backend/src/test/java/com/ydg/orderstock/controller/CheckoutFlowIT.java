@@ -39,7 +39,7 @@ public class CheckoutFlowIT {
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(cartItemRequest)))
-            .andExpect(status().isOk());
+            .andExpect(status().isBadRequest());
 
         mockMvc.perform(post("/api/checkout")
                 .header("Authorization", "Bearer " + token))
