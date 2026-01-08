@@ -39,7 +39,7 @@ public class CheckoutFlowIT {
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(cartItemRequest)))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isOk());
 
         mockMvc.perform(post("/api/checkout")
                 .header("Authorization", "Bearer " + token))
@@ -58,12 +58,22 @@ public class CheckoutFlowIT {
 
         CartItemRequest cartItemRequest = new CartItemRequest();
         cartItemRequest.setProductId(productId);
-        cartItemRequest.setQuantity(2);
+        cartItemRequest.setQuantity(1);
 
         mockMvc.perform(post("/api/cart/items")
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(cartItemRequest)))
+            .andExpect(status().isOk());
+
+        String stockUpdatePayload = """
+            {"delta":-1}
+            """;
+
+        mockMvc.perform(patch("/api/products/" + productId + "/stock")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(stockUpdatePayload))
             .andExpect(status().isOk());
 
         mockMvc.perform(post("/api/checkout")
