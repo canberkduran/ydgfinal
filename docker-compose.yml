@@ -1,6 +1,6 @@
 services:
   backend:
-    build: ./backend
+    image: ydgfinal-backend:latest
     ports:
       - "8090:8090"
     environment:
@@ -12,7 +12,7 @@ services:
       retries: 10
 
   frontend:
-    build: ./frontend
+    image: ydgfinal-frontend:latest
     ports:
       - "3000:80"
     depends_on:
@@ -27,7 +27,7 @@ services:
       - "4444:4444"
 
   e2e:
-    build: ./e2e
+    image: ydgfinal-e2e:latest
     profiles: ["e2e"]
     depends_on:
       frontend:
@@ -37,18 +37,9 @@ services:
     environment:
       - FRONTEND_URL=http://frontend
     volumes:
-      - ./e2e/target:/app/target
-
-  maven:
-    image: maven:3.9.8-eclipse-temurin-21
-    volumes:
       - jenkins_home:/var/jenkins_home
-      - maven-repo:/root/.m2
-
-  node:
-    image: node:20-alpine
-    volumes:
-      - jenkins_home:/var/jenkins_home
+    working_dir: /var/jenkins_home/workspace/ydgfinal/e2e
+    command: ["mvn", "-q", "test"]
 
   jenkins:
     build: ./jenkins
@@ -62,5 +53,4 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
-  maven-repo:
   jenkins_home:

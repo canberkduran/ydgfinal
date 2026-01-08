@@ -11,14 +11,17 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh 'docker-compose run --rm -w $WORKSPACE/backend maven mvn -q -DskipTests=false clean package'
-        sh 'docker-compose run --rm -w $WORKSPACE/frontend node sh -c "npm install && npm run build"'
+        sh 'tar -C $WORKSPACE -cf - backend | docker build -t ydgfinal-backend:latest -f backend/Dockerfile -'
+        sh 'tar -C $WORKSPACE -cf - frontend | docker build -t ydgfinal-frontend:latest -f frontend/Dockerfile -'
+        sh 'tar -C $WORKSPACE -cf - e2e | docker build -t ydgfinal-e2e:latest -f e2e/Dockerfile -'
+        sh 'docker run --rm --volumes-from $(hostname) -w $WORKSPACE/backend maven:3.9.8-eclipse-temurin-21 mvn -q -DskipTests=false clean package'
+        sh 'docker run --rm --volumes-from $(hostname) -w $WORKSPACE/frontend node:20-alpine sh -c "npm install && npm run build"'
       }
     }
 
     stage('Unit Tests') {
       steps {
-        sh 'docker-compose run --rm -w $WORKSPACE/backend maven mvn -q -Dtest=*Test test'
+        sh 'docker run --rm --volumes-from $(hostname) -w $WORKSPACE/backend maven:3.9.8-eclipse-temurin-21 mvn -q -Dtest=*Test test'
       }
       post {
         always {
@@ -29,7 +32,7 @@ pipeline {
 
     stage('Integration Tests') {
       steps {
-        sh 'docker-compose run --rm -w $WORKSPACE/backend maven mvn -q -DskipTests=true -DskipITs=false failsafe:integration-test failsafe:verify'
+        sh 'docker run --rm --volumes-from $(hostname) -w $WORKSPACE/backend maven:3.9.8-eclipse-temurin-21 mvn -q -DskipTests=true -DskipITs=false failsafe:integration-test failsafe:verify'
       }
       post {
         always {
