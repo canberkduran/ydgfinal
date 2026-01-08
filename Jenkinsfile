@@ -48,7 +48,8 @@ pipeline {
 
     stage('E2E Tests') {
       steps {
-        sh 'docker-compose --profile e2e up -d --build backend frontend selenium'
+        sh 'docker-compose down --remove-orphans || true'
+        sh 'docker-compose --profile e2e up -d --build --force-recreate backend frontend selenium'
         sh 'docker run --rm --volumes-from $(hostname) --network ydgfinal_default -w $WORKSPACE/e2e maven:3.9.8-eclipse-temurin-21 mvn -q test'
       }
       post {
