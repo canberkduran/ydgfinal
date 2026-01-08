@@ -1,0 +1,40 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8090:8090"
+    environment:
+      - JWT_SECRET=dev-secret-dev-secret-dev-secret-123456
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/api/products"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  selenium:
+    image: selenium/standalone-chrome:4.21.0
+    profiles: ["e2e"]
+    shm_size: 2gb
+    ports:
+      - "4444:4444"
+
+  e2e:
+    build: ./e2e
+    profiles: ["e2e"]
+    depends_on:
+      frontend:
+        condition: service_started
+      selenium:
+        condition: service_started
+    environment:
+      - FRONTEND_URL=http://frontend
+    volumes:
+      - ./e2e/target:/app/target
