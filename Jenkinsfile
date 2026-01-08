@@ -55,8 +55,9 @@ pipeline {
     stage('E2E Tests') {
       steps {
         sh 'docker rm -f ydgfinal_selenium || true'
-        sh 'docker run -d --name ydgfinal_selenium --network ydgfinal_default -p 4444:4444 selenium/standalone-chrome:4.21.0'
-        sh 'docker run --rm --volumes-from $(hostname) --network ydgfinal_default -w $WORKSPACE/e2e maven:3.9.8-eclipse-temurin-21 mvn -q test'
+        sh 'docker run -d --name ydgfinal_selenium --network ydgfinal_default --network-alias selenium selenium/standalone-chrome:4.21.0'
+        sh 'docker run --rm --network ydgfinal_default curlimages/curl:8.7.1 sh -c "for i in 1 2 3 4 5 6 7 8 9 10; do curl -sf http://selenium:4444/wd/hub/status && exit 0; sleep 2; done; exit 1"'
+        sh 'docker run --rm --volumes-from $(hostname) --network ydgfinal_default -e SELENIUM_URL=http://selenium:4444/wd/hub -e FRONTEND_URL=http://frontend -w $WORKSPACE/e2e maven:3.9.8-eclipse-temurin-21 mvn -q test'
       }
       post {
         always {
@@ -73,5 +74,4 @@ pipeline {
     }
   }
 }
-
 

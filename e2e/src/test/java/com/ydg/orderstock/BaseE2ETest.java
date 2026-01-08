@@ -17,15 +17,17 @@ public abstract class BaseE2ETest {
     protected WebDriver driver;
     protected WebDriverWait wait;
     protected String baseUrl;
+    protected String seleniumUrl;
 
     @BeforeEach
     void setup() throws Exception {
         baseUrl = System.getenv().getOrDefault("FRONTEND_URL", "http://frontend");
+        seleniumUrl = System.getenv().getOrDefault("SELENIUM_URL", "http://selenium:4444/wd/hub");
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
-        driver = new RemoteWebDriver(new URL("http://selenium:4444/wd/hub"), options);
+        driver = new RemoteWebDriver(new URL(seleniumUrl), options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
     }
 
