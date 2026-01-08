@@ -8,20 +8,13 @@ pipeline {
     }
     stage('Build') {
       steps {
-        dir('backend') {
-          sh 'mvn -q -DskipTests=false clean package'
-        }
-        dir('frontend') {
-          sh 'npm install'
-          sh 'npm run build'
-        }
+        sh 'docker run --rm -v $PWD/backend:/app -w /app maven:3.9.8-eclipse-temurin-21 mvn -q -DskipTests=false clean package'
+        sh 'docker run --rm -v $PWD/frontend:/app -w /app node:20-alpine sh -c "npm install && npm run build"'
       }
     }
     stage('Unit Tests') {
       steps {
-        dir('backend') {
-          sh 'mvn -q -Dtest=*Test test'
-        }
+        sh 'docker run --rm -v $PWD/backend:/app -w /app maven:3.9.8-eclipse-temurin-21 mvn -q -Dtest=*Test test'
       }
       post {
         always {
@@ -31,9 +24,7 @@ pipeline {
     }
     stage('Integration Tests') {
       steps {
-        dir('backend') {
-          sh 'mvn -q -DskipTests=true -DskipITs=false failsafe:integration-test failsafe:verify'
-        }
+        sh 'docker run --rm -v $PWD/backend:/app -w /app maven:3.9.8-eclipse-temurin-21 mvn -q -DskipTests=true -DskipITs=false failsafe:integration-test failsafe:verify'
       }
       post {
         always {
