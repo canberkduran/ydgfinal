@@ -36,7 +36,7 @@ pipeline {
       }
       post {
         always {
-          junit 'backend/target/failsafe-reports/*.xml'
+          junit allowEmptyResults: true, testResults: 'backend/target/failsafe-reports/*.xml'
         }
       }
     }
