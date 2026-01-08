@@ -41,6 +41,7 @@ public class CartServiceTest {
         product.setTitle("Phone");
         product.setPrice(new BigDecimal("100"));
         product.setStockQuantity(5);
+        product.setStockQuantity(5);
 
         Cart cart = new Cart();
         cart.setUser(user);
