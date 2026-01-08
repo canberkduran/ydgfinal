@@ -54,6 +54,7 @@ pipeline {
 
     stage('E2E Tests') {
       steps {
+        sh 'docker network inspect ydgfinal_default >/dev/null 2>&1 || docker network create ydgfinal_default'
         sh 'docker rm -f ydgfinal_selenium || true'
         sh 'docker run -d --name ydgfinal_selenium --network ydgfinal_default --network-alias selenium selenium/standalone-chrome:4.21.0'
         sh 'docker run --rm --network ydgfinal_default curlimages/curl:8.7.1 sh -c "for i in 1 2 3 4 5 6 7 8 9 10; do curl -sf http://selenium:4444/wd/hub/status && exit 0; sleep 2; done; exit 1"'
@@ -74,4 +75,3 @@ pipeline {
     }
   }
 }
-
