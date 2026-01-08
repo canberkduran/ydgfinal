@@ -49,9 +49,9 @@ pipeline {
 
     stage('E2E Tests') {
       steps {
-        sh 'export COMPOSE_PROJECT_NAME=ydgfinal; docker-compose down --remove-orphans || true'
-        sh 'export COMPOSE_PROJECT_NAME=ydgfinal; docker-compose --profile e2e up -d --build backend frontend selenium'
-        sh 'export COMPOSE_PROJECT_NAME=ydgfinal; docker run --rm --volumes-from $(hostname) --network ydgfinal_default -w $WORKSPACE/e2e maven:3.9.8-eclipse-temurin-21 mvn -q test'
+        sh 'docker rm -f ydgfinal_selenium || true'
+        sh 'docker run -d --name ydgfinal_selenium --network ydgfinal_default -p 4444:4444 selenium/standalone-chrome:4.21.0'
+        sh 'docker run --rm --volumes-from $(hostname) --network ydgfinal_default -w $WORKSPACE/e2e maven:3.9.8-eclipse-temurin-21 mvn -q test'
       }
       post {
         always {
@@ -63,6 +63,7 @@ pipeline {
 
   post {
     always {
+      sh 'docker rm -f ydgfinal_selenium || true'
       sh 'docker-compose down --remove-orphans'
     }
   }
