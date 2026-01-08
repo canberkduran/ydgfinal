@@ -9,11 +9,15 @@ pipeline {
       }
     }
 
-    stage('Build & Unit Tests') {
+    stage('Build') {
       steps {
-        dir('backend') {
-          sh 'mvn clean test'
-        }
+        sh 'docker compose run --rm maven mvn clean package -DskipTests=false'
+      }
+    }
+
+    stage('Unit Tests') {
+      steps {
+        sh 'docker compose run --rm maven mvn test'
       }
       post {
         always {
@@ -24,9 +28,7 @@ pipeline {
 
     stage('Integration Tests') {
       steps {
-        dir('backend') {
-          sh 'mvn verify -DskipTests'
-        }
+        sh 'docker compose run --rm maven mvn verify -DskipTests=true'
       }
       post {
         always {
