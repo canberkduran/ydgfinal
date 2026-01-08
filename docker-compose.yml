@@ -42,16 +42,13 @@ services:
   maven:
     image: maven:3.9.8-eclipse-temurin-21
     volumes:
-      - ./backend:/app/backend
+      - jenkins_home:/var/jenkins_home
       - maven-repo:/root/.m2
-    working_dir: /app/backend
 
   node:
     image: node:20-alpine
     volumes:
-      - ./frontend:/app/frontend
-      - node-modules:/app/node_modules
-    working_dir: /app/frontend
+      - jenkins_home:/var/jenkins_home
 
   jenkins:
     build: ./jenkins
@@ -66,5 +63,4 @@ services:
 
 volumes:
   maven-repo:
-  node-modules:
   jenkins_home:

@@ -11,14 +11,14 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh 'docker-compose run --rm maven mvn -q -DskipTests=false clean package'
-        sh 'docker-compose run --rm node sh -c "npm install && npm run build"'
+        sh 'docker-compose run --rm -w $WORKSPACE/backend maven mvn -q -DskipTests=false clean package'
+        sh 'docker-compose run --rm -w $WORKSPACE/frontend node sh -c "npm install && npm run build"'
       }
     }
 
     stage('Unit Tests') {
       steps {
-        sh 'docker-compose run --rm maven mvn -q -Dtest=*Test test'
+        sh 'docker-compose run --rm -w $WORKSPACE/backend maven mvn -q -Dtest=*Test test'
       }
       post {
         always {
@@ -29,7 +29,7 @@ pipeline {
 
     stage('Integration Tests') {
       steps {
-        sh 'docker-compose run --rm maven mvn -q -DskipTests=true -DskipITs=false failsafe:integration-test failsafe:verify'
+        sh 'docker-compose run --rm -w $WORKSPACE/backend maven mvn -q -DskipTests=true -DskipITs=false failsafe:integration-test failsafe:verify'
       }
       post {
         always {
@@ -58,7 +58,7 @@ pipeline {
 
   post {
     always {
-      sh 'docker-compose down -v'
+      sh 'docker-compose down --remove-orphans'
     }
   }
 }
