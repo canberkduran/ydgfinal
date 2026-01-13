@@ -56,6 +56,11 @@ public class ProductControllerIT {
         org.junit.jupiter.api.Assertions.assertTrue(found);
     }
 
+
+
+
+    
+
     private String registerAndGetToken() throws Exception {
         RegisterRequest register = new RegisterRequest();
         register.setEmail("productuser@example.com");
